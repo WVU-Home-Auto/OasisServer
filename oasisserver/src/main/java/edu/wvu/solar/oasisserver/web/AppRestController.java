@@ -1,0 +1,13 @@
+package edu.wvu.solar.oasisserver.web;
+
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * This class will contain all REST calls that an app or
+ * web client will make to the server.
+ *
+ */
+@RestController
+public class AppRestController {
+
+}
