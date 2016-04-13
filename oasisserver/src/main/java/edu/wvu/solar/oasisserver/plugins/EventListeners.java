@@ -8,6 +8,8 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import edu.wvu.solar.oasisserver.plugins.exceptions.InvalidParametersException;
+
 
 /**
  * This class provides the "If This Then That" functionality
@@ -50,8 +52,14 @@ public class EventListeners {
 	 * @param deviceID ID of device to edit the parameters of when this recipe is triggered
 	 * @param parameters Parameters to set on the specified device when this recipe is triggered
 	 * @return Unique ID of the newly created recipe
+	 * @throws InvalidParametersException If parameters is an empty array
 	 */
-	public static String addRecipe(JSONObject event, String deviceID, JSONArray parameters){
+	public static String addRecipe(JSONObject event, String deviceID, JSONArray parameters) throws InvalidParametersException{
+		//TODO: Check if deviceID is a valid device ID.
+		//TODO: More sanity checking, like within the event
+		if(parameters.length() <= 0){
+			throw new InvalidParametersException("No parameters supplied.");
+		}
 		String recipeID = UUID.randomUUID().toString();
 		JSONObject recipe = new JSONObject();
 		recipe.append(RECIPE_ID_LABEL, recipeID);
