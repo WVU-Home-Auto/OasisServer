@@ -62,9 +62,9 @@ public class EventListeners {
 		}
 		String recipeID = UUID.randomUUID().toString();
 		JSONObject recipe = new JSONObject();
-		recipe.append(RECIPE_ID_LABEL, recipeID);
-		recipe.append(DEVICE_ID_LABEL, deviceID);
-		recipe.append(PARAMETERS_LABEL, parameters);
+		recipe.put(RECIPE_ID_LABEL, recipeID);
+		recipe.put(DEVICE_ID_LABEL, deviceID);
+		recipe.put(PARAMETERS_LABEL, parameters);
 		recipes.put(recipeID, recipe);
 		return recipeID;
 	}
