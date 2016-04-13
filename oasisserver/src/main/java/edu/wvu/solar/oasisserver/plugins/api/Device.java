@@ -5,6 +5,7 @@ package edu.wvu.solar.oasisserver.plugins.api;
  * devices to the house.
  *
  */
+
 public abstract class Device {
 
 }
