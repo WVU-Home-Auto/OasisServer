@@ -43,6 +43,13 @@
 			<artifactId>json</artifactId>
 			<version>20160212</version>
 		</dependency>
+		
+		<!-- Database -->
+		<dependency>
+			<groupId>org.mapdb</groupId>
+			<artifactId>mapdb</artifactId>
+			<version>3.0.0-M6</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>oasysserver</finalName>
