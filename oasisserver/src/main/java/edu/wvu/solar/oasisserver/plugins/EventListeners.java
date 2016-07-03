@@ -1,5 +1,6 @@
 package edu.wvu.solar.oasisserver.plugins;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -24,7 +25,7 @@ import edu.wvu.solar.oasisserver.plugins.exceptions.InvalidParametersException;
  */
 public class EventListeners {
 
-	private static final Logger LOGGER = LogManager.getLogger(EventListeners.class);
+	//private static final Logger LOGGER = LogManager.getLogger(EventListeners.class);
 	private static final String RECIPE_ID_LABEL = "recipeID";
 	private static final String DEVICE_ID_LABEL = "deviceID";
 	private static final String PARAMETERS_LABEL = "parameters";
@@ -86,10 +87,11 @@ public class EventListeners {
 		recipes.get(type).put(recipe);*/
 		
 		ConcurrentMap<String, String> map;
-		HashMapMaker<String, String> mapMaker = database.hashMap(type, Serializer.STRING, Serializer.STRING);
-		if(database.exists(type)){
+		HashMapMaker<String, String> mapMaker = database.hashMap("map", Serializer.STRING, Serializer.STRING);
+		if(database.exists("map")){
 			//LOGGER.debug("Opening existing entry");
 			map = mapMaker.open();
+			
 		}else{
 			//LOGGER.debug("Creating new entry");
 			map = mapMaker.create();
@@ -97,7 +99,31 @@ public class EventListeners {
 		map.put(type, recipe.toString());
 		database.commit();
 	}
-	
+	public String getRecipes(String type){
+			if(database.exists(type)){
+			ConcurrentMap<String, String> map;
+			HashMapMaker<String, String> mapMaker = database.hashMap(type, Serializer.STRING, Serializer.STRING);
+			map = mapMaker.open();
+			return map.values().toString();
+			}
+			else{
+				throw new IllegalArgumentException("No database exist");
+			}
+	}
+	public String removeRecipe(String key) throws InvalidEventException{
+		String r = "";
+		if(database.exists("map")){
+			ConcurrentMap<String, String> map;
+			HashMapMaker<String, String> mapMaker = database.hashMap("map", Serializer.STRING, Serializer.STRING);
+			map = mapMaker.open();
+			r = map.remove(key);
+		}
+		else{
+			throw new IllegalArgumentException("Database must exist");
+		}
+		database.commit();
+		return r;
+	}
 	public static void main(String[] args) throws InvalidParametersException, InvalidEventException{
 		/*DB db = DBMaker.fileDB("/Users/Timmy/Desktop/test.db").fileMmapEnable().make();
 		ConcurrentMap<Integer, String> map = db.hashMap("TEST").keySerializer(Serializer.INTEGER).valueSerializer(Serializer.STRING).open();
@@ -120,18 +146,24 @@ public class EventListeners {
 		}
 		long end = System.currentTimeMillis();
 		System.out.println(end - begin);*/
-		
+
 		JSONArray parameters = new JSONArray("[{\"name\":\"on\", \"type\":\"boolean\"}, {\"name\":\"color\", \"type\":\"color\"}]");
 		JSONObject event = new JSONObject("{\"state\":\"off\", \"type\":\"test\"}");
 		String deviceID = "Blep";
-		EventListeners el = new EventListeners("/Users/Timmy/Desktop/test2.db");
+		EventListeners el = new EventListeners("/home/chrx/Documents/test2.db");
+		
 		long start = System.currentTimeMillis();
 		System.out.println(start);
-		for(int i = 0; i < 1000000; i++){
-			el.addRecipe(event, deviceID, parameters);
+		for(int i = 0; i < 10; i++){
+			JSONObject t = event;
+			t.put(TYPE_LABEL, Integer.toString(i));
+			el.addRecipe(t, Integer.toString(i), parameters);
 		}
 		long end = System.currentTimeMillis();
 		System.out.println(end - start);
-		
+		System.out.println(el.getRecipes("map"));
+		for(int i = 0; i < 10; i++){
+			System.out.println(el.removeRecipe(Integer.toString(i)));
+		}
 	}
 }
