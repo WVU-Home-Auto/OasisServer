@@ -1,6 +1,5 @@
 package edu.wvu.solar.oasisserver.plugins;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
@@ -30,7 +29,8 @@ public class EventListeners {
 	private static final String DEVICE_ID_LABEL = "deviceID";
 	private static final String PARAMETERS_LABEL = "parameters";
 	private static final String TYPE_LABEL = "type";
-	
+	private static final String MAP_NAME = "map";
+
 	/*
 	 * This stores the recipes with the event type as the key, and
 	 * a JSONArray of all recipes with this event type as the value.
@@ -87,8 +87,8 @@ public class EventListeners {
 		recipes.get(type).put(recipe);*/
 		
 		ConcurrentMap<String, String> map;
-		HashMapMaker<String, String> mapMaker = database.hashMap("map", Serializer.STRING, Serializer.STRING);
-		if(database.exists("map")){
+		HashMapMaker<String, String> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, Serializer.STRING);
+		if(database.exists(MAP_NAME)){
 			//LOGGER.debug("Opening existing entry");
 			map = mapMaker.open();
 			
@@ -99,28 +99,35 @@ public class EventListeners {
 		map.put(type, recipe.toString());
 		database.commit();
 	}
-	public String getRecipes(String type){
-			if(database.exists(type)){
+	/* Retrieves the values of all the JSON strings stored in the database
+	 * 
+	 * @return all the JSON string values in a single string
+	 * 
+	 */
+	public String getRecipes(){
 			ConcurrentMap<String, String> map;
-			HashMapMaker<String, String> mapMaker = database.hashMap(type, Serializer.STRING, Serializer.STRING);
-			map = mapMaker.open();
+			HashMapMaker<String, String> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, Serializer.STRING);
+			map = mapMaker.createOrOpen();
 			return map.values().toString();
-			}
-			else{
-				throw new IllegalArgumentException("No database exist");
-			}
+			
+
 	}
-	public String removeRecipe(String key) throws InvalidEventException{
-		String r = "";
-		if(database.exists("map")){
-			ConcurrentMap<String, String> map;
-			HashMapMaker<String, String> mapMaker = database.hashMap("map", Serializer.STRING, Serializer.STRING);
-			map = mapMaker.open();
-			r = map.remove(key);
-		}
-		else{
-			throw new IllegalArgumentException("Database must exist");
-		}
+	/**
+	 *Removes the specified value from the database then saves the change to disk
+	 *
+	 *@param key the key value that matches up with the value desired to move. 
+	 *		In this case the key is the event type.
+	 *
+	 *@return returns the String of the object that is removed or null if there 
+	 *		  nothing removed
+	 * 
+	 */
+	public String removeRecipe(String key){
+		String r = null;
+		ConcurrentMap<String, String> map;
+		HashMapMaker<String, String> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, Serializer.STRING);
+		map = mapMaker.createOrOpen();
+		r = map.remove(key);
 		database.commit();
 		return r;
 	}
@@ -151,19 +158,21 @@ public class EventListeners {
 		JSONObject event = new JSONObject("{\"state\":\"off\", \"type\":\"test\"}");
 		String deviceID = "Blep";
 		EventListeners el = new EventListeners("/home/chrx/Documents/test2.db");
-		
 		long start = System.currentTimeMillis();
-		System.out.println(start);
+		
 		for(int i = 0; i < 10; i++){
 			JSONObject t = event;
 			t.put(TYPE_LABEL, Integer.toString(i));
-			el.addRecipe(t, Integer.toString(i), parameters);
+			el.addRecipe(t, deviceID+i, parameters);
 		}
+		
 		long end = System.currentTimeMillis();
 		System.out.println(end - start);
-		System.out.println(el.getRecipes("map"));
+				
 		for(int i = 0; i < 10; i++){
 			System.out.println(el.removeRecipe(Integer.toString(i)));
 		}
+		
+		System.out.println(el.getRecipes());
 	}
 }
