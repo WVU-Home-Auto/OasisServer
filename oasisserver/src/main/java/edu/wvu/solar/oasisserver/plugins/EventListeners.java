@@ -101,16 +101,15 @@ public class EventListeners {
 	}
 	/* Retrieves the values of all the JSON strings stored in the database
 	 * 
-	 * @return all the JSON string values in a single string
+	 * @return all the JSON values in a JSON Array object
 	 * 
 	 */
-	public String getRecipes(){
+	public JSONArray getRecipes(){
 			ConcurrentMap<String, String> map;
 			HashMapMaker<String, String> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, Serializer.STRING);
 			map = mapMaker.createOrOpen();
-			return map.values().toString();
-			
-
+			String recipes = map.values().toString();
+			return new JSONArray(recipes);			
 	}
 	/**
 	 *Removes the specified value from the database then saves the change to disk
@@ -165,7 +164,7 @@ public class EventListeners {
 			t.put(TYPE_LABEL, Integer.toString(i));
 			el.addRecipe(t, deviceID+i, parameters);
 		}
-		
+		System.out.println(el.getRecipes().toString());
 		long end = System.currentTimeMillis();
 		System.out.println(end - start);
 				
@@ -173,6 +172,5 @@ public class EventListeners {
 			System.out.println(el.removeRecipe(Integer.toString(i)));
 		}
 		
-		System.out.println(el.getRecipes());
 	}
 }
