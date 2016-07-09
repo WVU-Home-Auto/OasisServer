@@ -99,7 +99,7 @@ public class EventListeners {
 		map.put(type, recipe.toString());
 		database.commit();
 	}
-	/* Retrieves the values of all the JSON strings stored in the database
+	/** Retrieves the values of all the JSON strings stored in the database
 	 * 
 	 * @return all the JSON values in a JSON Array object
 	 * 
