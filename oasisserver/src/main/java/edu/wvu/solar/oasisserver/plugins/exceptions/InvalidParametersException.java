@@ -1,6 +1,6 @@
 package edu.wvu.solar.oasisserver.plugins.exceptions;
 
-public class InvalidParametersException extends Exception{
+public class InvalidParametersException extends RuntimeException{
 
 	private static final long serialVersionUID = -1591151716950691863L;
 

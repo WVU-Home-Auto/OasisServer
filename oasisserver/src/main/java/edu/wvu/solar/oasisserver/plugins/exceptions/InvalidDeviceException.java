@@ -1,6 +1,6 @@
 package edu.wvu.solar.oasisserver.plugins.exceptions;
 
-public class InvalidDeviceException extends Exception{
+public class InvalidDeviceException extends RuntimeException{
 
 	private static final long serialVersionUID = -986959504654297277L;
 
