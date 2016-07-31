@@ -2,8 +2,11 @@ package edu.wvu.solar.oasisserver.plugins;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -154,5 +157,65 @@ public class EventListenersTest {
 		
 		JSONArray recipes = listeners.getRecipes();
 		assertEquals(recipes.length(), 1);
+	}
+	
+	@Test
+	public void testEventTrigger(){
+		/*
+		 * Simple test case for triggering an event, with
+		 * one matching recipe
+		 */
+		
+		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB7.db");
+		JSONArray parameters = new JSONArray("[{'name':'test1','value':'testvalue','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
+		JSONObject event = new JSONObject("{'type':'test'}");
+		event.put("parameters", parameters);
+		String recipeID = listeners.addRecipe(event, "1234", parameters);
+		event.put("parameters", parameters);
+		List<String> recipesTriggered = listeners.eventTriggered(event);
+		assertEquals(recipeID, recipesTriggered.get(0));
+		assertEquals(recipesTriggered.size(), 1);
+	}
+	
+	@Test
+	public void testEventTriggerNoRecipes(){
+		/*
+		 * Simple test case for triggering an event, with
+		 * no matching recipes
+		 */
+		
+		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB8.db");
+		JSONArray parameters = new JSONArray("[{'name':'test1','value':'testvalue','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
+		JSONObject event = new JSONObject("{'type':'test'}");
+		event.put("parameters", parameters);
+		listeners.addRecipe(event, "1234", parameters);
+		JSONArray otherparameters = new JSONArray("[{'name':'test1','value':'testvalue2','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
+		JSONObject otherEvent = new JSONObject("{'type':'test'}");
+		otherEvent.put("parameters", otherparameters);
+		List<String> recipesTriggered = listeners.eventTriggered(otherEvent);
+		assertEquals(recipesTriggered.size(), 0);
+	}
+	
+	@Test
+	public void testEventTriggerTwoRecipes(){
+		/*
+		 * Simple test case for triggering an event, with
+		 * two matching recipes
+		 */
+		
+		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB9.db");
+		JSONArray parameters = new JSONArray("[{'name':'test1','value':'testvalue','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
+		JSONObject event = new JSONObject("{'type':'test'}");
+		event.put("parameters", parameters);
+		String recipeID1 = listeners.addRecipe(event, "1234", parameters);
+		JSONObject otherEvent = new JSONObject(event.toString());
+		otherEvent.append("parameters", new JSONObject("{'name':'extraParameter','type':'who cares','value':'doesnt matter'}"));
+		String recipeID2 = listeners.addRecipe(event, "5678", parameters);
+		
+		List<String> result = listeners.eventTriggered(event);
+		
+		assertTrue(result.contains(recipeID1));
+		assertTrue(result.contains(recipeID2));
+		assertEquals(result.size(), 2);
 	}
 }

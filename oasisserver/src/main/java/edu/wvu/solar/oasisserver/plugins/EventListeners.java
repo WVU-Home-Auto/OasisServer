@@ -3,7 +3,9 @@ package edu.wvu.solar.oasisserver.plugins;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -35,6 +37,8 @@ public class EventListeners {
 	public static final String PARAMETERS_LABEL = "parameters";
 	public static final String TYPE_LABEL = "type";
 	public static final String EVENT_LABEL = "event";
+	public static final String VALUE_LABEL = "value";
+	public static final String NAME_LABEL = "name";
 	private static final String MAP_NAME = "recipesMap";
 	private static final Logger LOGGER = LogManager.getLogger(EventListeners.class);
 
@@ -53,12 +57,13 @@ public class EventListeners {
 	 */
 	//private HashMap<String, JSONArray> recipes;
 	private DB database;
-	private ConcurrentMap<String, String> map;
+	private ConcurrentMap<String, JSONArray> map;
 	
 	public EventListeners(String dbPath){
 		database = DBMaker.fileDB(dbPath).closeOnJvmShutdown().fileMmapEnableIfSupported().make();
 		
-		HashMapMaker<String, String> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, Serializer.STRING);
+		JSONArraySerializer serializer = new JSONArraySerializer();
+		HashMapMaker<String, JSONArray> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, serializer);
 		if(database.exists(MAP_NAME)){
 			LOGGER.debug("Opening existing hashmap in EventListener constructor");
 			map = mapMaker.open();
@@ -105,14 +110,14 @@ public class EventListeners {
 		JSONArray list;
 		if(map.containsKey(type)){
 			LOGGER.debug("addRecipe: Found existing list for type {}", type);
-			String oldListString = map.get(type);
-			list = new JSONArray(oldListString);
+			list = map.get(type);
+			//list = new JSONArray(oldListString);
 		}else{
 			LOGGER.debug("addRecipe: Making new list for type {}", type);
 			list = new JSONArray();
 		}
 		list.put(recipe);
-		map.put(type, list.toString());
+		map.put(type, list);
 		database.commit();
 		return recipeID;
 	}
@@ -126,8 +131,8 @@ public class EventListeners {
 	 */
 	public JSONArray getRecipes(){
 		JSONArray output = new JSONArray();	
-		for(String json : map.values()){
-			JSONArray list = new JSONArray(json);
+		for(JSONArray list : map.values()){
+			//JSONArray list = new JSONArray(json);
 			for(int i = 0; i < list.length(); i++){
 				output.put(list.getJSONObject(i));
 			}
@@ -141,9 +146,9 @@ public class EventListeners {
 	 *@param type the event type of the recipe
 	 */
 	public void removeRecipe(String recipeId, String type){
-		String json = map.get(type);
-		if(json != null){
-			JSONArray array = new JSONArray(json);
+		JSONArray array = map.get(type);
+		if(array != null){
+			//JSONArray array = new JSONArray(json);
 			int toRemove = -1;
 			for(int i = 0; i < array.length(); i++){
 				JSONObject recipe = array.getJSONObject(i);
@@ -155,8 +160,8 @@ public class EventListeners {
 
 			if(toRemove >= 0){
 				array.remove(toRemove);
-				json = array.toString();
-				map.put(type, json);
+				//json = array.toString();
+				map.put(type, array);
 				database.commit();
 			}
 		}
@@ -167,11 +172,76 @@ public class EventListeners {
 	 * recipes that match this event, and acts accordingly
 	 * 
 	 * @param event Event that was triggered
+	 * @return List of RecipeIDs that were triggered
 	 */
-	public void eventTriggered(JSONObject event){
-		if(!event.has(TYPE_LABEL)){
+	public List<String> eventTriggered(JSONObject triggeredEvent){
+		if(!triggeredEvent.has(TYPE_LABEL)){
 			throw new InvalidEventException("Event must contain a 'type' parameter.");
 		}
+		
+		List<String> triggeredIDs = new ArrayList<String>();
+		
+		String type = triggeredEvent.getString(TYPE_LABEL);
+		JSONArray array = map.get(type);
+		JSONArray triggeredParameters = triggeredEvent.getJSONArray(PARAMETERS_LABEL);
+		JSONObject triggeredParameter;
+		
+		if(array != null && triggeredParameters != null){
+			JSONObject recipe;
+			JSONArray recipeParameters;
+			JSONObject recipeParameter;
+			
+			
+			for(int recipeNum = 0; recipeNum < array.length(); recipeNum++){
+				//This for loop checks all recipes of the given type...
+				recipe = array.getJSONObject(recipeNum);
+				recipeParameters = recipe.getJSONObject(EVENT_LABEL).getJSONArray(PARAMETERS_LABEL);
+				
+				//This value will be set to false if a recipe parameter is found that doesn't
+				//have a matching event parameter. In that case, we don't have to bother
+				//searching through the rest of the recipe parameters
+				boolean continueSearching = true;
+				
+				for(int recipeParamNum = 0; recipeParamNum < recipeParameters.length() && continueSearching; recipeParamNum++){
+					//This for loop goes through all parameters in the current recipe...
+					recipeParameter = recipeParameters.getJSONObject(recipeParamNum);
+					
+					//This will be set to true when an event parameter is found that matches the
+					//current recipe parameter
+					boolean matchFound = false;
+					
+					for(int triggeredParamNum = 0; triggeredParamNum < triggeredParameters.length() && !matchFound; triggeredParamNum++){
+						//And this loop goes through all the parameters in the newly triggered event to see
+						//if one of them matches the current recipe parameter.
+						//(All recipe parameters have to find a match in the triggered event parameters
+						//in order for the recipe to be executed)
+						triggeredParameter = triggeredParameters.getJSONObject(triggeredParamNum);
+						if(triggeredParameter.getString(NAME_LABEL).equals(recipeParameter.getString(NAME_LABEL))
+								&& triggeredParameter.getString(TYPE_LABEL).equals(recipeParameter.getString(TYPE_LABEL))
+								&& triggeredParameter.get(VALUE_LABEL).equals(recipeParameter.get(VALUE_LABEL))){
+							
+							matchFound = true;
+						}
+					}
+					
+					if(!matchFound){
+						continueSearching = false;
+					}
+				}
+				
+				//If this variable is false, it means we stopped searching through the
+				//recipe parameters because we found one without a matching event parameter.
+				//If it's true, it means this recipe DOES match the event, so we need to 
+				//do stuff
+				if(continueSearching){
+					LOGGER.debug("Time to do stuff with this recipe:\nRecipe: {}\nEvent: {}", recipe.toString(2), triggeredEvent.toString(2));
+					triggeredIDs.add(recipe.getString(RECIPE_ID_LABEL));
+					//TODO: Change the parameters
+				}
+			}
+		}
+		
+		return triggeredIDs;
 	}
 	
 	
@@ -212,13 +282,14 @@ public class EventListeners {
 //		long end = System.currentTimeMillis();
 //		System.out.println(end-start);
 		
-		JSONArray arr1 = new JSONArray();
-		arr1.put("one");
-		arr1.put("two");
-		JSONArray arr2 = new JSONArray();
-		arr2.put("three");
-		arr2.put("four");
-		arr1.put(arr2);
-		System.out.println(arr1.toString(4));
+		EventListeners listeners = new EventListeners("/Users/Timmy/Desktop/AAAAAHHHHH.db");
+		JSONArray parameters = new JSONArray("[{'name':'test1','value':'testvalue','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
+		JSONObject event = new JSONObject("{'type':'test'}");
+		event.put("parameters", parameters);
+		listeners.addRecipe(event, "1234", parameters);
+		JSONArray otherparameters = new JSONArray("[{'name':'test1','value':'testvalue2','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
+		JSONObject otherEvent = new JSONObject("{'type':'test'}");
+		otherEvent.put("parameters", otherparameters);
+		listeners.eventTriggered(otherEvent);
 	}
 }
