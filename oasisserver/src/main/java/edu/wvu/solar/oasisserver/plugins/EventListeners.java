@@ -171,10 +171,10 @@ public class EventListeners {
 	 * This method is called when an event is triggered. It searches the database for any
 	 * recipes that match this event, and acts accordingly
 	 * 
-	 * @param event Event that was triggered
+	 * @param triggeredEvent Event that was triggered
 	 * @return List of RecipeIDs that were triggered
 	 */
-	public List<String> eventTriggered(JSONObject triggeredEvent){
+	List<String> eventTriggered(JSONObject triggeredEvent){
 		if(!triggeredEvent.has(TYPE_LABEL)){
 			throw new InvalidEventException("Event must contain a 'type' parameter.");
 		}
@@ -242,54 +242,5 @@ public class EventListeners {
 		}
 		
 		return triggeredIDs;
-	}
-	
-	
-	
-	
-	
-	public static void main(String[] args) throws InvalidParametersException, InvalidEventException{
-			
-		//Note: In Eclipse, multiple lines can be commented/uncommented at once by highlighting them
-		//and hitting ctrl+/ (or cmd+/ on Mac)
-		
-//		DB database = DBMaker.fileDB("/Users/Timmy/Desktop/TESTDBBB.db").closeOnJvmShutdown().fileMmapEnableIfSupported().make();
-//		
-//		HashMapMaker<String, String> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, Serializer.STRING);
-//		ConcurrentMap<String, String> map;
-//		if(database.exists(MAP_NAME)){
-//			//LOGGER.debug("Opening existing entry");
-//			map = mapMaker.open();
-//			
-//		}else{
-//			//LOGGER.debug("Creating new entry");
-//			map = mapMaker.create();
-//		}
-//		
-//		/*map.put("Test1", "TESTIFICATE UNO");
-//		database.commit();
-//		map.put("Test2", "TESTIFICATE DOS");
-//		database.commit();*/
-//		System.out.println(map.get("Test1"));
-//		System.out.println(map.get("Test2"));
-//		
-//		long start = System.currentTimeMillis();
-//		for(int i = 0; i < 1000; i++){
-//			map.put("Test", "TESTIFICATE " + i);
-//			database.commit();
-//		}
-//		//database.commit();
-//		long end = System.currentTimeMillis();
-//		System.out.println(end-start);
-		
-		EventListeners listeners = new EventListeners("/Users/Timmy/Desktop/AAAAAHHHHH.db");
-		JSONArray parameters = new JSONArray("[{'name':'test1','value':'testvalue','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
-		JSONObject event = new JSONObject("{'type':'test'}");
-		event.put("parameters", parameters);
-		listeners.addRecipe(event, "1234", parameters);
-		JSONArray otherparameters = new JSONArray("[{'name':'test1','value':'testvalue2','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
-		JSONObject otherEvent = new JSONObject("{'type':'test'}");
-		otherEvent.put("parameters", otherparameters);
-		listeners.eventTriggered(otherEvent);
 	}
 }

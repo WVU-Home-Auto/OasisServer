@@ -18,7 +18,7 @@ import edu.wvu.solar.oasisserver.plugins.exceptions.InvalidParametersException;
 public class EventListenersTest {
 
 	@Rule
-    public TemporaryFolder folder= new TemporaryFolder();
+    public TemporaryFolder folder = new TemporaryFolder();
 	
 	@Rule
 	public final ExpectedException exception = ExpectedException.none();
