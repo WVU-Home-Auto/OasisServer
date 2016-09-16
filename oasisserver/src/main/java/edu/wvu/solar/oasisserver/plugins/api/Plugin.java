@@ -17,6 +17,10 @@ public abstract class Plugin {
 	public Plugin(String plugName){
 		name = plugName;
 	}
+
+	public Plugin(){
+
+    }
 	
 	public abstract void initialize(PluginManager p, JSONArray j);
 	
