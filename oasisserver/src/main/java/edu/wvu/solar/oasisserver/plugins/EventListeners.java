@@ -3,16 +3,11 @@ package edu.wvu.solar.oasisserver.plugins;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.mapdb.DB;
@@ -22,6 +17,8 @@ import org.mapdb.Serializer;
 
 import edu.wvu.solar.oasisserver.plugins.exceptions.InvalidEventException;
 import edu.wvu.solar.oasisserver.plugins.exceptions.InvalidParametersException;
+
+import javax.print.attribute.standard.MediaSize;
 
 
 /**
@@ -34,10 +31,14 @@ public class EventListeners {
 	//private static final Logger LOGGER = LogManager.getLogger(EventListeners.class);
 	public static final String RECIPE_ID_LABEL = "recipeID";
 	public static final String DEVICE_ID_LABEL = "deviceID";
-	public static final String PARAMETERS_LABEL = "parameters";
-	public static final String TYPE_LABEL = "type";
+	//public static final String PARAMETERS_LABEL = "parameters";
+    public static final String CHECK_PARAMETERS_LABEL = "checkParameters";
+    public static final String SET_PARAMETERS_LABEL = "setParameters";
+	public static final String EVENT_TYPE_LABEL = "eventType";
 	public static final String EVENT_LABEL = "event";
 	public static final String VALUE_LABEL = "value";
+    public static final String PARAMETER_TYPE_LABEL = "type";
+    public static final String COMPARISON_LABEL = "comparison";
 	public static final String NAME_LABEL = "name";
 	private static final String MAP_NAME = "recipesMap";
 	private static final Logger LOGGER = LogManager.getLogger(EventListeners.class);
@@ -58,8 +59,14 @@ public class EventListeners {
 	//private HashMap<String, JSONArray> recipes;
 	private DB database;
 	private ConcurrentMap<String, JSONArray> map;
+
+    // Stores a reference to the one and only instance of DeviceManager
+    private DeviceManager deviceManager;
 	
-	public EventListeners(String dbPath){
+	public EventListeners(String dbPath, DeviceManager deviceManager){
+
+	    this.deviceManager = deviceManager;
+
 		database = DBMaker.fileDB(dbPath).closeOnJvmShutdown().fileMmapEnableIfSupported().make();
 		
 		JSONArraySerializer serializer = new JSONArraySerializer();
@@ -78,46 +85,59 @@ public class EventListeners {
 	 * that matches the event parameter, the device specified by the deviceID parameter
 	 * has its  parameters edited according to the parameters parameter
 	 * 
-	 * @param event Event to trigger this recipe. In order to trigger the recipe,
-	 * 		all data in this JSONObject must match the event exactly. This event
-	 * 		must have a "type" parameter. Every other parameter is optional.
-	 * @param deviceID ID of device to edit the parameters of when this recipe is triggered
-	 * @param parameters Parameters to set on the specified device when this recipe is triggered
+	 * @param eventType Type of event to listen for.
+     * @param deviceID ID of the device to listen for. If this is left null, then this recipe listens
+     *                 for ANY device that triggers this type of event
+	 * @param checkParameters All parameter checks must be met in order for this event to be triggered.
+	 * @param setParameters Parameters to set when this recipe is triggered. Each parameter
+     *                      should specify a deviceID field
 	 * 
 	 * @return Randomly generated ID that was given to the newly-added recipe
 	 * 
 	 * @throws InvalidParametersException If parameters is an empty array
 	 * @throws InvalidEventException If event does not have a "type" parameter
 	 */
-	public String addRecipe(JSONObject event, String deviceID, JSONArray parameters){
-		//TODO: Check if deviceID is a valid device ID.
-		//TODO: More sanity checking, like within the event
-		if(parameters.length() <= 0){
-			throw new InvalidParametersException("No parameters supplied.");
+	public String addRecipe(String eventType, String deviceID, JSONArray checkParameters, JSONArray setParameters){
+		//TODO: Check if eventType is valid
+		//TODO: More sanity checking, like within the parameters
+		if(checkParameters.length() <= 0){
+			throw new InvalidParametersException("No check parameters supplied.");
 		}
-		if(!event.has("type")){
-			throw new InvalidEventException("Event must contain \"type\" parameter.");
-		}
+		if(setParameters.length() <= 0){
+		    throw new InvalidParametersException("No set parameters supplied.");
+        }
+		for(int i = 0; i < checkParameters.length(); i++){
+		    if(!checkParameters.getJSONObject(i).has(DEVICE_ID_LABEL)){
+		        throw new InvalidParametersException("All parameters must contain a \"deviceID\" field.");
+            }
+        }
+        for(int i = 0; i < setParameters.length(); i++){
+            if(!setParameters.getJSONObject(i).has(DEVICE_ID_LABEL)){
+                throw new InvalidParametersException("All parameters must contain a \"deviceID\" field.");
+            }
+        }
 		
 		String recipeID = UUID.randomUUID().toString();
 		JSONObject recipe = new JSONObject();
 		recipe.put(RECIPE_ID_LABEL, recipeID);
-		recipe.put(DEVICE_ID_LABEL, deviceID);
-		recipe.put(PARAMETERS_LABEL, parameters);
-		recipe.put(EVENT_LABEL, event);
-		String type = event.getString(TYPE_LABEL);
-		
+        recipe.put(CHECK_PARAMETERS_LABEL, checkParameters);
+		recipe.put(SET_PARAMETERS_LABEL, setParameters);
+		recipe.put(EVENT_TYPE_LABEL, eventType);
+        if(deviceID != null){
+            recipe.put(DEVICE_ID_LABEL, deviceID);
+        }
+
 		JSONArray list;
-		if(map.containsKey(type)){
-			LOGGER.debug("addRecipe: Found existing list for type {}", type);
-			list = map.get(type);
+		if(map.containsKey(eventType)){
+			LOGGER.debug("addRecipe: Found existing list for type {}", eventType);
+			list = map.get(eventType);
 			//list = new JSONArray(oldListString);
 		}else{
-			LOGGER.debug("addRecipe: Making new list for type {}", type);
+			LOGGER.debug("addRecipe: Making new list for type {}", eventType);
 			list = new JSONArray();
 		}
 		list.put(recipe);
-		map.put(type, list);
+		map.put(eventType, list);
 		database.commit();
 		return recipeID;
 	}
@@ -139,14 +159,16 @@ public class EventListeners {
 		}
 		return output;
 	}
+
+
 	/**
 	 *Removes the specified value from the database then saves the change to disk
 	 *
 	 *@param recipeId the ID of the recipe that was randomly generated on recipe creation
-	 *@param type the event type of the recipe
+	 *@param eventType the event type of the recipe
 	 */
-	public void removeRecipe(String recipeId, String type){
-		JSONArray array = map.get(type);
+	public void removeRecipe(String recipeId, String eventType){
+		JSONArray array = map.get(eventType);
 		if(array != null){
 			//JSONArray array = new JSONArray(json);
 			int toRemove = -1;
@@ -161,12 +183,13 @@ public class EventListeners {
 			if(toRemove >= 0){
 				array.remove(toRemove);
 				//json = array.toString();
-				map.put(type, array);
+				map.put(eventType, array);
 				database.commit();
 			}
 		}
 	}
-	
+
+
 	/**
 	 * This method is called when an event is triggered. It searches the database for any
 	 * recipes that match this event, and acts accordingly
@@ -175,72 +198,131 @@ public class EventListeners {
 	 * @return List of RecipeIDs that were triggered
 	 */
 	List<String> eventTriggered(JSONObject triggeredEvent){
-		if(!triggeredEvent.has(TYPE_LABEL)){
+		if(!triggeredEvent.has(EVENT_TYPE_LABEL)){
 			throw new InvalidEventException("Event must contain a 'type' parameter.");
 		}
+
+		// This is the ID of the device that triggered the event, or null if none is specified
+		String triggeredDeviceID = triggeredEvent.has(DEVICE_ID_LABEL) ? triggeredEvent.getString(DEVICE_ID_LABEL) : null;
 		
 		List<String> triggeredIDs = new ArrayList<String>();
 		
-		String type = triggeredEvent.getString(TYPE_LABEL);
-		JSONArray array = map.get(type);
-		JSONArray triggeredParameters = triggeredEvent.getJSONArray(PARAMETERS_LABEL);
-		JSONObject triggeredParameter;
-		
-		if(array != null && triggeredParameters != null){
+		String eventType = triggeredEvent.getString(EVENT_TYPE_LABEL);
+
+        // List of Recipes with the correct event type
+        JSONArray recipes = map.get(eventType);
+
+		if(recipes != null){
 			JSONObject recipe;
-			JSONArray recipeParameters;
-			JSONObject recipeParameter;
-			
-			
-			for(int recipeNum = 0; recipeNum < array.length(); recipeNum++){
+			JSONArray recipeCheckParameters;
+            JSONArray recipeSetParameters;
+            String recipeDeviceID;
+			JSONObject checkParameter;
+
+			for(int recipeNum = 0; recipeNum < recipes.length(); recipeNum++){
 				//This for loop checks all recipes of the given type...
-				recipe = array.getJSONObject(recipeNum);
-				recipeParameters = recipe.getJSONObject(EVENT_LABEL).getJSONArray(PARAMETERS_LABEL);
+				recipe = recipes.getJSONObject(recipeNum);
+				recipeCheckParameters = recipe.getJSONArray(CHECK_PARAMETERS_LABEL);
+                recipeSetParameters = recipe.getJSONArray(SET_PARAMETERS_LABEL);
+                recipeDeviceID = recipe.has(DEVICE_ID_LABEL) ? recipe.getString(DEVICE_ID_LABEL) : null;
 				
 				//This value will be set to false if a recipe parameter is found that doesn't
 				//have a matching event parameter. In that case, we don't have to bother
 				//searching through the rest of the recipe parameters
-				boolean continueSearching = true;
+                //It starts out as false IFF the recipe has a deviceID which is not equal to the deviceID that
+                //triggered this method. In this case, don't even bother checking the parameters, because the
+                //deviceID is wrong.
+				boolean goodSoFar = recipeDeviceID == null || recipeDeviceID.equals(triggeredDeviceID);
 				
-				for(int recipeParamNum = 0; recipeParamNum < recipeParameters.length() && continueSearching; recipeParamNum++){
+				for(int checkParamNum = 0; checkParamNum < recipeCheckParameters.length() && goodSoFar; checkParamNum++){
 					//This for loop goes through all parameters in the current recipe...
-					recipeParameter = recipeParameters.getJSONObject(recipeParamNum);
-					
-					//This will be set to true when an event parameter is found that matches the
-					//current recipe parameter
-					boolean matchFound = false;
-					
-					for(int triggeredParamNum = 0; triggeredParamNum < triggeredParameters.length() && !matchFound; triggeredParamNum++){
-						//And this loop goes through all the parameters in the newly triggered event to see
-						//if one of them matches the current recipe parameter.
-						//(All recipe parameters have to find a match in the triggered event parameters
-						//in order for the recipe to be executed)
-						triggeredParameter = triggeredParameters.getJSONObject(triggeredParamNum);
-						if(triggeredParameter.getString(NAME_LABEL).equals(recipeParameter.getString(NAME_LABEL))
-								&& triggeredParameter.getString(TYPE_LABEL).equals(recipeParameter.getString(TYPE_LABEL))
-								&& triggeredParameter.get(VALUE_LABEL).equals(recipeParameter.get(VALUE_LABEL))){
-							
-							matchFound = true;
-						}
-					}
-					
-					if(!matchFound){
-						continueSearching = false;
-					}
+					checkParameter = recipeCheckParameters.getJSONObject(checkParamNum);
+                    goodSoFar = parameterCheck(checkParameter);
 				}
 				
 				//If this variable is false, it means we stopped searching through the
-				//recipe parameters because we found one without a matching event parameter.
+				//recipe parameters because we found one without a matching  parameter.
 				//If it's true, it means this recipe DOES match the event, so we need to 
 				//do stuff
-				if(continueSearching){
+				if(goodSoFar){
 					LOGGER.debug("Time to do stuff with this recipe:\nRecipe: {}\nEvent: {}", recipe.toString(2), triggeredEvent.toString(2));
 					triggeredIDs.add(recipe.getString(RECIPE_ID_LABEL));
-					//TODO: Change the parameters
+                    //In the interest of some marginal gains in efficiency, we gather together all the parameters to be set
+                    //by their deviceID, so that each Device only has setParameters() called once on it.
+                    HashMap<String, JSONArray> parametersToSet = new HashMap<String, JSONArray>();
+					for(int i = 0; i < recipeSetParameters.length(); i++){
+					    JSONObject recipeSetParameter = recipeSetParameters.getJSONObject(i);
+                        String deviceId = recipeSetParameter.getString(DEVICE_ID_LABEL);
+                        //I'm running out of names for variables
+                        JSONArray tempArray;
+                        if(parametersToSet.containsKey(deviceId)){
+                            tempArray = parametersToSet.get(deviceId);
+                        }else{
+                            tempArray = new JSONArray();
+                        }
+                        tempArray.put(recipeSetParameter);
+                        parametersToSet.put(deviceId, tempArray);
+                    }
+
+                    for(Map.Entry<String, JSONArray> entry : parametersToSet.entrySet()){
+                        deviceManager.setParameters(entry.getKey(), entry.getValue());
+                    }
 				}
 			}
 		}
 		
 		return triggeredIDs;
 	}
+
+    /**
+     * This looks at checkParameter, extracts the deviceID value from it, and checks that device to see if it has a
+     * parameter that meets the criteria of checkParameter
+     * @param checkParameter Parameter to check
+     * @return True if the device specified by the deviceID field in checkParameter has such a parameter, false otherwise
+     */
+	private boolean parameterCheck(JSONObject checkParameter){
+        String deviceID = checkParameter.getString(DEVICE_ID_LABEL);
+        JSONArray realParameters = deviceManager.getParameters(deviceID);
+        String comparison = checkParameter.getString(COMPARISON_LABEL);
+        String checkParameterName = checkParameter.getString(NAME_LABEL);
+        JSONObject realParameter;
+        for(int i = 0; i < realParameters.length(); i++){
+            realParameter = realParameters.getJSONObject(i);
+
+            if(checkParameterName.equals(realParameter.getString(NAME_LABEL))) {
+                if (comparison.equals("==")) {
+                    return checkParameter.getString(PARAMETER_TYPE_LABEL).equals(realParameter.getString(PARAMETER_TYPE_LABEL))
+                            && checkParameter.get(VALUE_LABEL).equals(realParameter.get(VALUE_LABEL));
+                } else if (comparison.equals("!=")) {
+                    return !(checkParameter.getString(PARAMETER_TYPE_LABEL).equals(realParameter.getString(PARAMETER_TYPE_LABEL))
+                            && checkParameter.get(VALUE_LABEL).equals(realParameter.get(VALUE_LABEL)));
+                    // This regex just checks to see if comparison is one of "<", ">", "<=", ">="
+                } else if (comparison.matches("^[<>]=?$")) {
+                    // Less than / greater than [or equal to] operators are only valid for numbers.
+                    // Integers can be cast to doubles without loss of precision, but not vice-versa.
+                    // Therefore, just assume everything is doubles and hope for the best.
+                    double realVal = (Double) realParameter.get(VALUE_LABEL);
+                    double checkVal = (Double) checkParameter.get(VALUE_LABEL);
+
+                    if (comparison.equals("<")) {
+                        return realVal < checkVal;
+                    } else if (comparison.equals(">")) {
+                        return realVal > checkVal;
+                    } else if (comparison.equals("<=")) {
+                        return realVal <= checkVal;
+                    } else if (comparison.equals(">=")) {
+                        return realVal >= checkVal;
+                    } else {
+                        LOGGER.error("This code should never have been executed.");
+                        // This should never happen, but I need it here to stop the Java compiler from complaining
+                        return false;
+                    }
+                } else {
+                    throw new InvalidParametersException("\"" + comparison + "\" is not a valid comparison.");
+                }
+            }
+        }
+
+        return false;
+    }
 }

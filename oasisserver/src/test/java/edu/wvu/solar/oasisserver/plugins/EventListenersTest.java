@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -32,7 +31,7 @@ public class EventListenersTest {
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB1.db");
 		JSONObject event = new JSONObject();
-		event.put(EventListeners.TYPE_LABEL, "testtype");
+		event.put(EventListeners.EVENT_TYPE_LABEL, "testtype");
 		JSONObject parameter = new JSONObject();
 		parameter.put("name", "testParameter");
 		parameter.put("value", "testValue");
@@ -48,7 +47,7 @@ public class EventListenersTest {
 		JSONObject recipe = recipes.getJSONObject(0);
 		assertEquals(recipe.getString(EventListeners.RECIPE_ID_LABEL), result);
 		JSONObject newEvent = recipe.getJSONObject(EventListeners.EVENT_LABEL);
-		assertEquals(newEvent.getString(EventListeners.TYPE_LABEL), "testtype");
+		assertEquals(newEvent.getString(EventListeners.EVENT_TYPE_LABEL), "testtype");
 	}
 	
 	@Test
@@ -120,7 +119,7 @@ public class EventListenersTest {
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB5.db");
 		JSONObject event = new JSONObject();
-		event.put(EventListeners.TYPE_LABEL, "testtype");
+		event.put(EventListeners.EVENT_TYPE_LABEL, "testtype");
 		JSONObject parameter = new JSONObject();
 		parameter.put("name", "testParameter");
 		parameter.put("value", "testValue");
@@ -144,7 +143,7 @@ public class EventListenersTest {
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB6.db");
 		JSONObject event = new JSONObject();
-		event.put(EventListeners.TYPE_LABEL, "testtype");
+		event.put(EventListeners.EVENT_TYPE_LABEL, "testtype");
 		JSONObject parameter = new JSONObject();
 		parameter.put("name", "testParameter");
 		parameter.put("value", "testValue");
