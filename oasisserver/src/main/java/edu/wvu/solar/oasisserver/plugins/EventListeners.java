@@ -160,7 +160,8 @@ public class EventListeners {
 		return output;
 	}
 
-
+	
+	
 	/**
 	 *Removes the specified value from the database then saves the change to disk
 	 *
@@ -282,7 +283,7 @@ public class EventListeners {
      */
 	private boolean parameterCheck(JSONObject checkParameter){
         String deviceID = checkParameter.getString(DEVICE_ID_LABEL);
-        JSONArray realParameters = deviceManager.getParameters(deviceID);
+        JSONArray realParameters = DeviceManager.getParameters(deviceID);
         String comparison = checkParameter.getString(COMPARISON_LABEL);
         String checkParameterName = checkParameter.getString(NAME_LABEL);
         JSONObject realParameter;
