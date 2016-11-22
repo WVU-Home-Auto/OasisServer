@@ -1,5 +1,8 @@
 package edu.wvu.solar.oasisserver.plugins;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ConcurrentMap;
 
 import org.apache.logging.log4j.LogManager;
@@ -43,7 +46,7 @@ public class DeviceManager {
      * @return The result of calling getParameters() on the specified device
      */
     public static JSONArray getParameters(String deviceID){
-        return map.get(deviceID).getJSONArray("parameters");
+        return map.get(deviceID).getJSONArray("Parameters");
     }
 
     /**
@@ -53,7 +56,21 @@ public class DeviceManager {
      *                   or could also include the other parameters that don't change.
      */
     public void setParameters(String deviceID, JSONArray parameters){
-
+    	JSONArray existingParam = map.get(deviceID).getJSONArray("parameters");
+    	JSONArray newParam = parameters;
+    	ArrayList<String> list = new ArrayList<String>();     
+    	for (int i=0;i<existingParam.length();i++){ 
+    	    list.add(existingParam.get(i).toString());
+    	} 
+    	ArrayList<String> list2 = new ArrayList<String>();     
+    	for (int i=0;i<newParam.length();i++){ 
+    	    list.add(existingParam.get(i).toString());
+    	}
+    	list.removeAll(list2);
+    	list.addAll(list2);
+    	JSONArray combined = new JSONArray(list);
+    	map.get(deviceID).put("parameters", combined);
+    	
     }
     
     /** Retrieves the values of all the recipes stored in the database

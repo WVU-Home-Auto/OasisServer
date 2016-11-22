@@ -1,0 +1,55 @@
+<html lang="en">
+  <head>
+
+   <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+
+
+  </head>
+
+  <body>
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+	<script>
+    function checkpassword(){
+    	var username = document.getElementById("user").value;
+      var password = document.getElementById("pass").value;
+
+      var link = "http://localhost:8080/password?username="+username+"&password="+password;
+      $.ajax({
+     url: link,
+     dataType: 'text',
+     success: function(data) {
+          var obj = JSON.parse(data);
+          if(obj.login===true){
+            window.location = "http://localhost:8080/hello?name="+username;
+          }
+          else{
+            $( "#message" ).html( "<p>Wrong password please try again</p>" );
+          }
+     }
+});
+
+
+    }
+    </script>
+
+    <div class="row">
+      <div class="col-lg-3  col-xs-2"></div>
+    <div id="box" class="col-lg-6 col-xs-8">
+    <p id = "title">Home Automation Login</p>
+  <input type="text" id = "user" name="username" placeholder="Username"><br>
+  <input type="password" id = "pass" name="password" placeholder="Password"><br>
+  <input type="submit" id="submit" value="Submit" onclick="checkpassword()">
+  <p id="message"></p>
+      </div>
+    </div>
+
+  </body>
+</html>

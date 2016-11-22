@@ -1,0 +1,32 @@
+body{
+  color:blue;
+  background-color: #e2e8c0;
+  background-image: url("https://www.transparenttextures.com/patterns/brushed-alum-dark.png");
+}
+#box{
+  color:white;
+  background-color:#330f0a;
+  text-align: center;
+  border-style:solid;
+  border-color:white;
+  border-width:2px;
+  border-radius:5px;
+  min-height: 50vh;
+  height: auto;
+  position: relative;
+  top: 40%;
+  transform: translateY(50%);
+  font-size: 3vmin;
+  font-family: 'Ubuntu';
+  padding: 30px;
+}
+input{
+	border-radius:5px;
+	padding:8px;
+	margin:8px;
+	color:black;
+}
+#title{
+	font-size:4vh;
+}
+
