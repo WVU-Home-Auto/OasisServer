@@ -20,7 +20,6 @@
     function checkpassword(){
     	var username = document.getElementById("user").value;
       var password = document.getElementById("pass").value;
-
       var link = "http://localhost:8080/password?username="+username+"&password="+password;
       $.ajax({
      url: link,
@@ -29,6 +28,9 @@
           var obj = JSON.parse(data);
           if(obj.login===true){
             window.location = "http://localhost:8080/hello?name="+username;
+          }
+          else if (password.length===0) {
+            $( "#message" ).html( "<p>You must enter a password</p>" );
           }
           else{
             $( "#message" ).html( "<p>Wrong password please try again</p>" );
@@ -47,6 +49,7 @@
   <input type="text" id = "user" name="username" placeholder="Username"><br>
   <input type="password" id = "pass" name="password" placeholder="Password"><br>
   <input type="submit" id="submit" value="Submit" onclick="checkpassword()">
+  <p>Not Regestered? <a href="signup.html">Sign Up Here</a></p>
   <p id="message"></p>
       </div>
     </div>

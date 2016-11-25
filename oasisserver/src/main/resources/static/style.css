@@ -1,5 +1,5 @@
 body{
-  color:blue;
+  black;
   background-color: #e2e8c0;
   background-image: url("https://www.transparenttextures.com/patterns/brushed-alum-dark.png");
 }
@@ -14,7 +14,7 @@ body{
   min-height: 50vh;
   height: auto;
   position: relative;
-  top: 40%;
+  top: 10%;
   transform: translateY(50%);
   font-size: 3vmin;
   font-family: 'Ubuntu';
