@@ -1,3 +1,4 @@
+/*
 package edu.wvu.solar.oasisserver.plugins;
 
 import static org.junit.Assert.*;
@@ -24,10 +25,12 @@ public class EventListenersTest {
 	
 	@Test
 	public void testAddRecipeSucceed(){
-		/*
+		*/
+/*
 		 * Test case for when addRecipe should succeed.
 		 * Expect a non-null, non-empty return
-		 */
+		 *//*
+
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB1.db");
 		JSONObject event = new JSONObject();
@@ -52,11 +55,13 @@ public class EventListenersTest {
 	
 	@Test
 	public void testAddMultipleRecipeSucceed(){
-		/*
+		*/
+/*
 		 * Test case for when addRecipe should succeed.
 		 * Specifically, adds multiple recipes of the same type
 		 * Expect a non-null, non-empty return
-		 */
+		 *//*
+
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB2.db");
 		JSONObject event = new JSONObject();
@@ -79,10 +84,12 @@ public class EventListenersTest {
 	
 	@Test
 	public void testAddRecipeNoType(){
-		/*
+		*/
+/*
 		 * Test case for when addRecipe should fail because the
 		 * supplied recipe has no type
-		 */
+		 *//*
+
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB3.db");
 		JSONObject event = new JSONObject();
 		JSONObject parameter = new JSONObject();
@@ -97,10 +104,12 @@ public class EventListenersTest {
 	
 	@Test
 	public void testAddRecipeNoParameters(){
-		/*
+		*/
+/*
 		 * Test case for when addRecipe should fail because
 		 * no parameters were supplied
-		 */
+		 *//*
+
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB4.db");
 		JSONObject event = new JSONObject();
 		event.put("type", "testtype");
@@ -112,10 +121,12 @@ public class EventListenersTest {
 	
 	@Test
 	public void testRemoveRecipeThatsPresent(){
-		/*
+		*/
+/*
 		 * Test case for removing a recipe that does
 		 * exist in the database
-		 */
+		 *//*
+
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB5.db");
 		JSONObject event = new JSONObject();
@@ -136,10 +147,12 @@ public class EventListenersTest {
 	
 	@Test
 	public void testRemoveRecipeThatsNotPresent(){
-		/*
+		*/
+/*
 		 * Test case for removing a recipe that does NOT
 		 * exist in the database
-		 */
+		 *//*
+
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB6.db");
 		JSONObject event = new JSONObject();
@@ -160,10 +173,12 @@ public class EventListenersTest {
 	
 	@Test
 	public void testEventTrigger(){
-		/*
+		*/
+/*
 		 * Simple test case for triggering an event, with
 		 * one matching recipe
-		 */
+		 *//*
+
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB7.db");
 		JSONArray parameters = new JSONArray("[{'name':'test1','value':'testvalue','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
@@ -178,10 +193,12 @@ public class EventListenersTest {
 	
 	@Test
 	public void testEventTriggerNoRecipes(){
-		/*
+		*/
+/*
 		 * Simple test case for triggering an event, with
 		 * no matching recipes
-		 */
+		 *//*
+
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB8.db");
 		JSONArray parameters = new JSONArray("[{'name':'test1','value':'testvalue','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
@@ -197,10 +214,12 @@ public class EventListenersTest {
 	
 	@Test
 	public void testEventTriggerTwoRecipes(){
-		/*
+		*/
+/*
 		 * Simple test case for triggering an event, with
 		 * two matching recipes
-		 */
+		 *//*
+
 		
 		EventListeners listeners = new EventListeners(folder.getRoot() + "/TempDB9.db");
 		JSONArray parameters = new JSONArray("[{'name':'test1','value':'testvalue','type':'testtype'},{'name':'test2','value':'testvalue','type':'testtype'}]");
@@ -218,3 +237,4 @@ public class EventListenersTest {
 		assertEquals(result.size(), 2);
 	}
 }
+*/

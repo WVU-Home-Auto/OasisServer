@@ -1,14 +1,125 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>Getting Started: Serving Web Content</title>
+
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"/>
-    <link rel="stylesheet" href="style.css"/>
+    <link rel="stylesheet" href="greeting.css"/>
     <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
 </head>
+
 <body>
-    <p th:text="'Hello, ' + ${name} + '!'" />
+<script>
+    /*<![CDATA[*/
+    window.onload = function(){
+        var modal = document.getElementById('myModal');
+
+        var btn = document.getElementById("myBtn");
+
+        var span = document.getElementsByClassName("close")[0];
+
+        btn.onclick = function() {
+            modal.style.display = "flex";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    }
+    function addDevice(){
+        var id = document.getElementById('id').value;
+        var param = document.getElementById('param').value;
+        var link = "http://localhost:8080/addDevice?ID="+id+'\u0026parameters='+param;
+        $.ajax({
+            url: link,
+            dataType: 'text',
+            success: function(data) {
+                console.log(data);
+                /*var obj = JSON.parse(data);
+                var idstr = "ID:  "+obj.id+"<br></br>";
+                var pstr = "Parameters:  "+obj.parameters;
+                $("#java").html(idstr+pstr);*/
+            }
+        });
+    }
+    function addEvent(){
+        var id = document.getElementById('id').value;
+        var param = document.getElementById('param').value;
+        var link = "http://localhost:8080/addDevice?ID="+id+'\u0026parameters='+param;
+        $.ajax({
+            url: link,
+            dataType: 'text',
+            success: function(data) {
+                var obj = JSON.parse(data);
+                var idstr = "ID:  "+obj.id+"<br></br>";
+                var pstr = "Parameters:  "+obj.parameters;
+                $("#java").html(idstr+pstr);
+            }
+        });
+    }
+    function listDevice(){
+        var link = "http://localhost:8080/listDevices";
+        $.ajax({
+            url: link,
+            dataType: 'text',
+            success: function(data) {
+                var string = "";
+                //var obj = JSON.parse(data);
+                console.log(data);
+                /*for(var i = 0; i<obj.length;i++){
+                    string = "ID:  "+obj[i].id+"\u0009Parameters:  "+obj.parameters+"<br></br>";
+                }
+                $("#java").html(string);*/
+            }
+        });
+    }
+    function listEvent(){
+        var link = "http://localhost:8080/listEvents";
+        $.ajax({
+            url: link,
+            dataType: 'text',
+            success: function(data) {
+                var obj = JSON.parse(data);
+                console.log(data);
+            }
+        });
+    }
+    /*]]>*/
+</script>
+<p th:text="'Hello, ' + ${name} + '!'" />
+<a href="http://localhost:8080/">Click here to go back to the login page</a>
+<br></br>
+
+<button id="myBtn">Add a Device</button>
+<button onclick = "listDevice()">List Devices</button>
+<br></br>
+<button onclick = "addEvent()">Add a Event</button>
+<button onclick = "listEvent()">List Events</button>
+<p id ="java"></p>
+
+<div class = "box">
+    <div id="myModal" class="modal">
+
+        <!-- Modal content -->
+        <div class="modal-content">
+            <span class="close">x</span>
+            <input type="text" id = "id" name="id" ></input><br></br>
+            <input type="text" id = "param" name="parameter"></input><br></br>
+            <input type="submit" id="submit" name="submit" value="Submit" onclick="addDevice()"></input>
+        </div>
+
+    </div>
+</div>
+
 </body>
 </html>

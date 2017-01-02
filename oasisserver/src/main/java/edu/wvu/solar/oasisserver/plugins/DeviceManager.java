@@ -70,9 +70,23 @@ public class DeviceManager {
     	list.addAll(list2);
     	JSONArray combined = new JSONArray(list);
     	map.get(deviceID).put("parameters", combined);
-    	
+    	database.commit();
     }
-    
+	/** registers a device
+	 *
+	 * @param JSONObject device to be registered
+	 *
+	 */
+	public boolean registerDevice(JSONObject registerDevice){
+		if(registerDevice.getString("id").length() > 0){
+			//write to hash map and save
+			map.put(registerDevice.getString("id"), registerDevice);
+			database.commit();
+			return true;
+		}
+		return false;
+	}
+
     /** Retrieves the values of all the recipes stored in the database
 	 * 
 	 * @return a JSONArray of all recipes. Each recipe has 
@@ -82,6 +96,7 @@ public class DeviceManager {
 	public JSONArray getDevices(){
 		JSONArray output = new JSONArray();	
 		for(String list : map.keySet()){
+			System.out.println(list);
 			JSONObject o = new JSONObject();
 			o.put("ID", list);
 			o.put("parameters", map.get(list));

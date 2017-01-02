@@ -12,33 +12,35 @@ public class EventManager {
 	private static final String MAP_NAME = "eventMap";
 	private DB database;
 	private ConcurrentMap<String, JSONArray> map;
-	
+
 	public EventManager(String dbPath){
 		database = DBMaker.fileDB(dbPath).closeOnJvmShutdown().fileMmapEnableIfSupported().make();
+
+		JSONArraySerializer serializer = new JSONArraySerializer();
+		HashMapMaker<String, JSONArray> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, serializer);
+		if(database.exists(MAP_NAME)){
+			map = mapMaker.open();
+		}else{
+			map = mapMaker.create();
+		}
+
 	}
-	
+
 	public void registerEvent(JSONObject registerEvent){
 		if(registerEvent.getString("type").length() > 0 && registerEvent.getJSONArray("parameters").length() > 0){
-			//open hash map
-			JSONArraySerializer serializer = new JSONArraySerializer();
-			HashMapMaker<String, JSONArray> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, serializer);
-			map=mapMaker.createOrOpen();
-			
 			//write to hash map and save
 			map.put(registerEvent.getString("type"), registerEvent.getJSONArray("parameters"));
 			database.commit();
 		}
 	}
-	
-	public static void main(String args[]){
-		EventManager test=new EventManager("/Users/TestSolarDB/dataStorage.db");
-		
-		JSONArray employees = new JSONArray();
-		employees.put(true);
-		
-		JSONObject hello = new JSONObject();
-		hello.put("type", "hello there");
-		hello.put("parameters",employees);
-		test.registerEvent(hello);
+	public JSONArray getEvents(){
+		JSONArray output = new JSONArray();
+		for(String list : map.keySet()){
+			JSONObject o = new JSONObject();
+			o.put("type", list);
+			o.put("parameters", map.get(list));
+			output.put(o);
+		}
+		return output;
 	}
 }
