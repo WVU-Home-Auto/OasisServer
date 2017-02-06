@@ -16,14 +16,16 @@ public class Parameter implements Comparable<Parameter>{
     }
 
     private String name;
+    private String deviceID;
     private Type type;
     private Object value;
     // TODO: Add user interface options
 
-    public Parameter(String name, Type type, Object value){
+    public Parameter(String name, Type type, Object value, String deviceID){
         this.name = name;
         this.type = type;
         this.value = value;
+        this.deviceID = deviceID;
     }
 
     public String getName() {
@@ -36,6 +38,10 @@ public class Parameter implements Comparable<Parameter>{
 
     public Object getValue() {
         return value;
+    }
+    
+    public void setValue(Object newValue){
+    	this.value = newValue;
     }
 
     public int compareTo(Parameter other) throws ClassCastException{
