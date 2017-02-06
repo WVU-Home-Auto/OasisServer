@@ -18,8 +18,11 @@ import org.mapdb.DB.HashMapMaker;
 public class DeviceManager {
 
     private DB database;
-    private static ConcurrentMap<String, Device> devices;
     private static final String MAP_NAME = "deviceMap";
+
+    // This map stores all of the Devices in the system. The String key is the Device's unique ID.
+    private static ConcurrentMap<String, Device> devices;
+
     private static final Logger LOGGER = LogManager.getLogger(DeviceManager.class);
 
     public DeviceManager(String dbPath, PluginManager pluginManager){
