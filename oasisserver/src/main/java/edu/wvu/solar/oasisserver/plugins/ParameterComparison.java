@@ -28,9 +28,6 @@ public class ParameterComparison {
     }
 
     public boolean matches(Parameter actualParam){
-        Object actualValue = actualParam.getValue();
-        if(actualValue instanceof Comparable     && testValue instanceof Comparable){
-            int diff = ((Comparable) actualValue).compareTo()
-        }
+
     }
 }
