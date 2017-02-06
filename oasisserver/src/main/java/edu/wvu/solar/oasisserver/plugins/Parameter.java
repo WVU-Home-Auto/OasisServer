@@ -40,6 +40,10 @@ public class Parameter implements Comparable<Parameter>{
         return value;
     }
     
+    public String getDeviceID(){
+    	return deviceID;
+    }
+    
     public void setValue(Object newValue){
     	this.value = newValue;
     }

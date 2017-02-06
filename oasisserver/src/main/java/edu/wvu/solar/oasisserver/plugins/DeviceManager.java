@@ -47,10 +47,10 @@ public class DeviceManager {
      * @param parameterName Name of parameter to set on that device
      * @param value Value to set that parameter to
      */
-    public void setParameter(String deviceID, String parameterName, Object value){
+    public void setParameter(Parameter parameter, Object value){
 
         //TODO Check if device actually exists, and if parameter actually exists
-        devices.get(deviceID).setParameter(parameterName, value);
+        devices.get(parameter.getDeviceID()).setParameter(parameter.getName(), value);
     }
 
     /**
