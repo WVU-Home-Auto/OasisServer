@@ -17,4 +17,15 @@ import javax.print.attribute.standard.MediaSize;
 public class EventListeners {
 
     private static final Logger LOGGER = LogManager.getLogger(EventListeners.class);
+    
+    public void addRecipe(){
+    	//TODO: do this
+    }
+    
+    public void eventTriggered(Event event){
+    	//TODO: do this
+    }
+    //Event is an unknown thing
+    
+    
 }
