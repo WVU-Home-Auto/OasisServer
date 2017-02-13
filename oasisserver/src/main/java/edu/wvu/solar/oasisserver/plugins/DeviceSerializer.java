@@ -9,14 +9,14 @@ import java.io.IOException;
 
 public class DeviceSerializer implements Serializer<Device>{
 
-    private PluginManager pluginManager;
+    private DeviceManager deviceManager;
 
-    public DeviceSerializer(PluginManager pluginManager){
-        this.pluginManager = pluginManager;
+    public DeviceSerializer(DeviceManager deviceManager){
+        this.deviceManager = deviceManager;
     }
 
     @Override
-    public void serialize(DataOutput2 dataOutput2, Device device) throws IOException {
+    public void serialize(DataOutput2 dataOutput, Device device) throws IOException {
         //TODO: Auto-generated method stub
     }
 
