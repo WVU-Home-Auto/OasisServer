@@ -28,7 +28,7 @@ public class DeviceManager {
     public DeviceManager(String dbPath, PluginManager pluginManager){
         database = DBMaker.fileDB(dbPath).closeOnJvmShutdown().fileMmapEnableIfSupported().make();
 
-        DeviceSerializer serializer = new DeviceSerializer(pluginManager);
+        DeviceSerializer serializer = new DeviceSerializer(this);
         HashMapMaker<String, Device> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, serializer);
         if(database.exists(MAP_NAME)){
             LOGGER.debug("Opening existing hashmap in DeviceManager constructor");

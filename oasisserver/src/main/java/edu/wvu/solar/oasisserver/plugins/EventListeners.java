@@ -23,15 +23,38 @@ public class EventListeners {
 	private List<Parameter> parameters;
 	private DeviceManager deviceManager;
 	
-	public EventListeners(String eventType, List<ParameterComparison> comparisons, List<Parameter> parameters, DeviceManager deviceManager){
+	private DB database;
+	private static ConcurrentMap<String, List<Recipe>> recipes;
+    private static final String MAP_NAME = "eventMap";
+	
+	public EventListeners(String eventType, List<ParameterComparison> comparisons, List<Parameter> parameters, DeviceManager deviceManager, String dbPath, PluginManager pluginManager){
 		this.eventType = eventType;
 		this.comparisons = comparisons;
 		this.parameters = parameters;
 		this.deviceManager = deviceManager;
+		
+		database = DBMaker.fileDB(dbPath).closeOnJvmShutdown().fileMmapEnableIfSupported().make();
+
+		RecipeSerializer serializer = new RecipeSerializer();
+        HashMapMaker<String, List<Recipe>> mapMaker = database.hashMap(MAP_NAME, Serializer.STRING, serializer);
+        if(database.exists(MAP_NAME)){
+            LOGGER.debug("Opening existing hashmap in EventListener constructor");
+            recipes = mapMaker.open();
+        }else{
+            LOGGER.debug("Creating new hashmap in EventListener constructor");
+            recipes = mapMaker.create();
+        }
 	}
 	
     public void addRecipe(String eventType, List<ParameterComparison> comparisons, List<Parameter> parameters, DeviceManager deviceManager){
-    	Recipe(eventType, comparisons, parameters, deviceManager);
+    	List<Recipe> fromDB = recipes.get(eventType);
+    	Recipe temp = new Recipe(eventType, comparisons, parameters, deviceManager);
+    	if(fromDB == null){
+    		fromDB = new ArrayList<Recipe>();
+    	}
+    	fromDB.add(temp);
+    	
+    	//TODO: Test to see if you need to commit to the database
     }
     
     public void eventTriggered(Event event){
