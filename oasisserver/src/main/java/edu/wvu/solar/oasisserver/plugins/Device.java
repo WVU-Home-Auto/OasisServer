@@ -37,7 +37,14 @@ public abstract class Device {
      * @param name Name of parameter to change
      * @param value Value to which to set the parameter
      */
-    public abstract void setParameter(String name, Object value);
+    public abstract void setValue(String name, Object value);
+    
+    /**
+     * Returns the value of the object
+     * @param name Name of parameter to get
+     * @return value Value of specified parameter
+     */
+    public abstract Object getValue(String name);
 
     /**
      * This method returns the unique, randomly-assigned ID of this device. This ID is assigned by
