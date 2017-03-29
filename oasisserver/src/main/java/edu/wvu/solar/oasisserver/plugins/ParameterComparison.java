@@ -28,20 +28,20 @@ public class ParameterComparison {
     }
 
 	public boolean matches(){
-	    Value actualParam = deviceManager.getParameter(deviceID, this.testValue.getName());
+	    Value actualValue = deviceManager.getParameter(deviceID, this.testValue.getName());
     	switch(comparison){
     		case GREATER:
-    			return actualParam.compareTo(testValue) > 0;
+    			return actualValue.compareTo(testValue) > 0;
     		case GREATER_OR_EQUAL:
-    			return actualParam.compareTo(testValue) >= 0;
+    			return actualValue.compareTo(testValue) >= 0;
     		case EQUAL:
-    			return actualParam.compareTo(testValue) == 0;
+    			return actualValue.compareTo(testValue) == 0;
     		case NOT_EQUAL:
-    			return actualParam.compareTo(testValue) != 0;
+    			return actualValue.compareTo(testValue) != 0;
     		case LESS_OR_EQUAL:
-    			return actualParam.compareTo(testValue) <= 0;
+    			return actualValue.compareTo(testValue) <= 0;
     		case LESS:
-    			return actualParam.compareTo(testValue) < 0;
+    			return actualValue.compareTo(testValue) < 0;
     		default:
     			return false;// if here, some done messed up
     	}
