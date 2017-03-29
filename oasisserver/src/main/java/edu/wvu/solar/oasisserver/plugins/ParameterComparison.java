@@ -16,10 +16,10 @@ public class ParameterComparison {
     String deviceID;
     String parameterName;
     Comparison comparison;
-    Parameter testValue;
+    Value testValue;
 
     public ParameterComparison(DeviceManager deviceManager, String deviceID, String parameterName,
-                               Comparison comparison, Parameter testValue){
+                               Comparison comparison, Value testValue){
         this.deviceID = deviceID;
         this.parameterName = parameterName;
         this.comparison = comparison;
@@ -28,9 +28,9 @@ public class ParameterComparison {
     }
 
 	public boolean matches(){
-	    Parameter actualParam = deviceManager.getParameter(deviceID, this.testValue.getName());
+	    Value actualParam = deviceManager.getParameter(deviceID, this.testValue.getName());
     	switch(comparison){
-    		case GREATER: 
+    		case GREATER:
     			return actualParam.compareTo(testValue) > 0;
     		case GREATER_OR_EQUAL:
     			return actualParam.compareTo(testValue) >= 0;

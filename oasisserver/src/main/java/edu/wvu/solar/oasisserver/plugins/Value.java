@@ -16,4 +16,8 @@ public class Value{
 	public Value getValue(){
 		return value; // idk what is being returned
 	}
+	
+	public boolean compareTo() {
+		return false;
+	}
 }
