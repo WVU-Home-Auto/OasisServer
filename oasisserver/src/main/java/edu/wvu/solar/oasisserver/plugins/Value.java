@@ -13,10 +13,15 @@ public class Value implements Comparable<Value>{
 	public Value(Parameter parameter, Object value){
 		this.value = value;
         this.type = parameter.getType();
+        this.name = parameter.getName();
 	}
 
 	public Object getValue(){
 	    return this.value;
+    }
+
+    public String getName(){
+        return name;
     }
 
 	public int compareTo(Value other) {
