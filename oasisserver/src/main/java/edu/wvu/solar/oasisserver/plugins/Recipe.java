@@ -6,13 +6,13 @@ public class Recipe {
 	
 	private String eventType;
 	private List<ParameterComparison> comparisons;
-	private List<Value> value;
+	private List<Value> values;
 	private DeviceManager deviceManager;
 	
 	public Recipe(String eventType, List<ParameterComparison> comparisons, List<Value> value, DeviceManager deviceManager){
 		this.eventType = eventType;
 		this.comparisons = comparisons;
-		this.value = value;
+		this.values = value;
 		this.deviceManager = deviceManager;
 	}
 
@@ -31,7 +31,7 @@ public class Recipe {
 	
 	public void setParameters(){
 		if(checkComparisons()){
-			for(Value value : value){
+			for(Value value : values){
 				deviceManager.setValue(value.getName(), value);
 			}
 		}
