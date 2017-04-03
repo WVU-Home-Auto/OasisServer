@@ -3,21 +3,30 @@ package edu.wvu.solar.oasisserver.plugins;
 /**
 * Value class to replace parameter pretty much.
 */
-public class Value{
+public class Value implements Comparable<Value>{
 	
 	private Parameter.Type type;
 	private String name;
 	private String deviceID;
+    private Object value;
 
-	public Value(){
-		//idk what goes here
+	public Value(Parameter parameter, Object value){
+		this.value = value;
+        this.type = parameter.getType();
 	}
-	
-	public Value getValue(){
-		return value; // idk what is being returned
-	}
-	
-	public boolean compareTo() {
-		return false;
+
+	public Object getValue(){
+	    return this.value;
+    }
+
+	public int compareTo(Value other) {
+	    switch(type){
+            case INTEGER:
+                Integer otherInt = (Integer) other.getValue();
+                Integer myInt = (Integer) this.value;
+                return myInt.compareTo(otherInt);
+            // Etc.
+        }
+	    return -1;
 	}
 }
