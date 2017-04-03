@@ -28,7 +28,7 @@ public class ParameterComparison {
     }
 
 	public boolean matches(){
-	    Value actualValue = deviceManager.getParameter(deviceID, this.testValue.getName());
+	    Value actualValue = deviceManager.getValue(deviceID, this.testValue.getName());
     	switch(comparison){
     		case GREATER:
     			return actualValue.compareTo(testValue) > 0;

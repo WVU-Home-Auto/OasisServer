@@ -32,7 +32,7 @@ public class Recipe {
 	public void setParameters(){
 		if(checkComparisons()){
 			for(Value value : value){
-				deviceManager.setParameter(parameter, parameter.getValue());
+				deviceManager.setValue(value.getName(), value);
 			}
 		}
 		return;

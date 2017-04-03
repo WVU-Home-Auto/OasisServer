@@ -47,12 +47,12 @@ public class DeviceManager {
      * @param parameterName Name of parameter to set on that device
      * @param value Value to set that parameter to
      */
-    public void setParameter(Parameter parameter, Object value){
+    public void setValue(String parameterName, Value value){
 
         //TODO Check if device actually exists, and if parameter actually exists
-        devices.get(parameter.getDeviceID()).setParameter(parameter.getName(), value);
+        devices.get(parameterName).setValue(parameterName, value);
     }
-
+    
     /**
      * Finds the device with the given ID, and calls its getParameter() method.
      * This method might, in the future, make use of some caching if performance
@@ -65,5 +65,9 @@ public class DeviceManager {
     public Parameter getParameter(String deviceID, String parameterName){
         //TODO Check if device and parameter actually exist
         return devices.get(deviceID).getParameter(parameterName);
+    }
+    
+    public Value getValue(String deviceID, String parameterName){
+    	return devices.get(deviceID).getValue(parameterName);
     }
 }

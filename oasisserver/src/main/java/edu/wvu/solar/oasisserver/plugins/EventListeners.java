@@ -46,9 +46,9 @@ public class EventListeners {
         }
 	}
 	
-    public void addRecipe(String eventType, List<ParameterComparison> comparisons, List<Parameter> parameters, DeviceManager deviceManager){
+    public void addRecipe(String eventType, List<ParameterComparison> comparisons, List<Value> value, DeviceManager deviceManager){
     	List<Recipe> fromDB = recipes.get(eventType);
-    	Recipe temp = new Recipe(eventType, comparisons, parameters, deviceManager);
+    	Recipe temp = new Recipe(eventType, comparisons, value, deviceManager);
     	if(fromDB == null){
     		fromDB = new ArrayList<Recipe>();
     	}
