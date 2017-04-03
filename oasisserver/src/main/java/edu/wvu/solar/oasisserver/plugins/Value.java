@@ -24,10 +24,6 @@ public class Value implements Comparable<Value>{
 		return name;
 	}
 
-    public String getName(){
-        return name;
-    }
-
 	public int compareTo(Value other) {
 	    switch(type){
             case INTEGER:
